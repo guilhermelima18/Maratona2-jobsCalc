@@ -1,10 +1,11 @@
 const express = require('express');
+const routes = require('./routes');
 const app = express();
 
-app.listen(3000, () => {
-  console.log("Server ligado.")
-});
+app.set('view engine', 'ejs');
 
-app.get("/", (req, res) => {
-  return res.send("Hello World")
-});
+app.use(express.static("public"));
+
+app.use(routes);
+
+app.listen(3000);
