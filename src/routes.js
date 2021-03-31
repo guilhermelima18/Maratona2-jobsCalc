@@ -30,8 +30,10 @@ const jobs = [
 ];
 
 routes.get("/", (req, res) => {
+  // Dividindo o total de horas do projeto pelo total de horas trabalhadas por dia no Projeto
   const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed();
 
+  // Pegando a hora exata da criação do projeto
   const createdDate = new Date(job.created_at);
   const dueDay = createdDate.getDate() + Number(remainingDays);
 
