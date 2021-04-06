@@ -1,27 +1,8 @@
 const Job = require('../model/Job');
-const jobUtils = require('../utils/jobUtils');
+const JobUtils = require('../utils/JobUtils');
 const Profile = require('../model/Profile');
 
 module.exports = {
-  index(req, res) {
-    const jobs = Job.get();
-    const profile = Profile.get();
-
-    const updatedJobs = jobs.map((job) => {
-      const remaining = jobUtils.remainingDays(job);
-      const status = remaining <= 0 ? 'done' : 'progress';
-
-      return {
-        ...job,
-        remaining,
-        status,
-        budget: jobUtils.calculateBudget(job, profile["value-hour"])
-      };
-    });
-
-    return res.render("index", { jobs: updatedJobs });
-  },
-
   saveJob(req, res) {
     const jobs = Job.get();
     // Pegar último ID do Array JOBS
@@ -42,21 +23,22 @@ module.exports = {
   },
 
   show(req, res) {
-    const jobs = Job.get();
-    const profile = Profile.get();
     const jobId = req.params.id;
+    const jobs = Job.get();
     const job = jobs.find(job => Number(job.id) === Number(jobId));
 
     if (!job) return res.send("Job not found!");
 
-    job.budget = jobUtils.calculateBudget(job, profile["value-hour"])
+    const profile = Profile.get();
+
+    job.budget = JobUtils.calculateBudget(job, profile["value-hour"])
 
     return res.render("job-edit", { job });
   },
 
   update(req, res) {
-    const jobs = Job.get();
     const jobId = req.params.id;
+    const jobs = Job.get();
     const job = jobs.find(job => Number(job.id) === Number(jobId));
 
     if (!job) return res.send("Job not found!");
@@ -68,21 +50,22 @@ module.exports = {
       "daily-hours": req.body["daily-hours"]
     };
 
-    jobs = jobs.map(job => {
+    const newJobs = jobs.map(job => {
       if (Number(job.id) === Number(jobId)) {
         job = updatedJob;
       }
       return job;
     })
 
+    Job.update(newJobs);
+
     res.redirect("/job/" + jobId);
   },
 
   delete(req, res) {
-    const jobs = Job.get();
     const jobId = req.params.id;
 
-    jobs = jobs.filter(job => Number(job.id) !== Number(jobId));
+    Job.delete(jobId)
 
     return res.redirect("/");
   }
